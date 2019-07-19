@@ -15,7 +15,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
 
-val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9')
+val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
 val OPERATORS = arrayOf('^','*','/','%','+','-')
 
 /**
@@ -29,6 +29,7 @@ val OPERATORS = arrayOf('^','*','/','%','+','-')
  */
 class SimpleCalc : Fragment() {
     val tokens = mutableListOf<String>()
+    var parenthesisCount = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,6 +68,38 @@ class SimpleCalc : Fragment() {
         add_button.setOnClickListener{operatorButtonPress("+")}
         val subtract_button: Button = view.findViewById(R.id.subtract_button)
         subtract_button.setOnClickListener{operatorButtonPress("-")}
+
+        //setup clear button
+        val clear_button: Button = view.findViewById(R.id.clear_button)
+        clear_button.setOnClickListener{
+            tokens.clear()
+            drawInput()
+            drawOutput()
+        }
+
+        val parenthesis_button: Button = view.findViewById(R.id.parenthesis_button)
+        parenthesis_button.setOnClickListener{
+            val prevToken = tokens.lastOrNull()
+            var c = ""
+            if(prevToken == null || prevToken.last() !in NUMERALS){
+                tokens.add("(")
+                parenthesisCount++
+            }
+            else if(parenthesisCount==0
+                    || prevToken.last() == '('){
+                tokens.add("*")
+                tokens.add("(")
+                parenthesisCount++
+
+            }
+            else{
+                assert(--parenthesisCount >= 0)
+                tokens.add(")")
+            }
+            drawInput()
+            drawOutput()
+        }
+
         // Inflate the layout for this fragment
         return view
     }
