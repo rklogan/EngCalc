@@ -14,6 +14,7 @@ import android.widget.Toast
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
+import java.lang.Exception
 
 val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
 val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
@@ -134,6 +135,28 @@ class SimpleCalc : Fragment() {
 
             drawInput()
             drawOutput()
+        }
+
+        //setup decimal button
+        val decimal_button: Button = view.findViewById(R.id.decimal_button)
+        decimal_button.setOnClickListener{
+            try{
+                val prevToken = tokens.last()
+                val prevChar = prevToken.last()
+
+                //we add a decimal point if the previous token was a number that didn't have one already
+                if(prevChar in NUMERALS && !prevToken.contains('.')){
+                    val temp = prevToken.plus('.')
+                    tokens.removeAt(tokens.lastIndex)
+                    tokens.add(temp)
+                }
+            }catch(NoSuchElementException: Exception){
+            }   //This catch means tokens was empty
+            finally {
+                drawInput()
+                drawOutput()
+            }
+
         }
 
         // Inflate the layout for this fragment
