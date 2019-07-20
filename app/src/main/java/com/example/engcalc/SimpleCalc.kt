@@ -16,7 +16,7 @@ import android.util.Log
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
 
 val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
-val OPERATORS = arrayOf('^','*','/','%','+','-')
+val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
 
 /**
  * A simple [Fragment] subclass.
@@ -68,6 +68,9 @@ class SimpleCalc : Fragment() {
         add_button.setOnClickListener{operatorButtonPress("+")}
         val subtract_button: Button = view.findViewById(R.id.subtract_button)
         subtract_button.setOnClickListener{operatorButtonPress("-")}
+        val percent_button: Button = view.findViewById(R.id.percent_button)
+        percent_button.setOnClickListener{operatorButtonPress("\\")}
+
 
         //setup clear button
         val clear_button: Button = view.findViewById(R.id.clear_button)
@@ -77,10 +80,10 @@ class SimpleCalc : Fragment() {
             drawOutput()
         }
 
+        //setup parenthesis button
         val parenthesis_button: Button = view.findViewById(R.id.parenthesis_button)
         parenthesis_button.setOnClickListener{
             val prevToken = tokens.lastOrNull()
-            var c = ""
             if(prevToken == null || prevToken.last() !in NUMERALS){
                 tokens.add("(")
                 parenthesisCount++
@@ -96,6 +99,29 @@ class SimpleCalc : Fragment() {
                 assert(--parenthesisCount >= 0)
                 tokens.add(")")
             }
+            drawInput()
+            drawOutput()
+        }
+
+        //setup plus/minus button
+        val sign_button: Button = view.findViewById(R.id.sign_button)
+        sign_button.setOnClickListener{
+
+            val prevToken = tokens.lastOrNull()
+            val prevChar = prevToken?.lastOrNull()
+            if(prevChar in NUMERALS || prevChar == '.'){
+                if(prevToken?.firstOrNull() == '-'){
+                    val temp = prevToken.drop(1)
+                    tokens.removeAt(tokens.lastIndex)
+                    tokens.add(temp)
+                }
+                else{
+                    val temp = "-".plus(prevToken)
+                    tokens.removeAt(tokens.lastIndex)
+                    tokens.add(temp)
+                }
+            }
+
             drawInput()
             drawOutput()
         }
