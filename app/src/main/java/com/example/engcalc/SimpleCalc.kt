@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_simple_calc.*
 
 val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
 val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
+val PARENTHESESE = arrayOf('(',')')
 
 /**
  * A simple [Fragment] subclass.
@@ -84,18 +85,24 @@ class SimpleCalc : Fragment() {
         val parenthesis_button: Button = view.findViewById(R.id.parenthesis_button)
         parenthesis_button.setOnClickListener{
             val prevToken = tokens.lastOrNull()
-            if(prevToken == null || prevToken.last() !in NUMERALS){
+            if(prevToken == null ||
+                    (prevToken.last() !in NUMERALS) && prevToken.last() !in PARENTHESESE){
+                //The first character of the input and any parenthesis following an operator or function
+                //must be (
                 tokens.add("(")
                 parenthesisCount++
             }
             else if(parenthesisCount==0
                     || prevToken.last() == '('){
+                //If no opening parenthesis already exist, or the previous token was a parenthesis
+                // we need to insert '* (' to clean up for the interpereter
                 tokens.add("*")
                 tokens.add("(")
                 parenthesisCount++
 
             }
             else{
+                //in any other case just try to close parenthesese
                 assert(--parenthesisCount >= 0)
                 tokens.add(")")
             }
@@ -109,13 +116,16 @@ class SimpleCalc : Fragment() {
 
             val prevToken = tokens.lastOrNull()
             val prevChar = prevToken?.lastOrNull()
+
+            //+/- is only applied to numbers
             if(prevChar in NUMERALS || prevChar == '.'){
+                //if it's already negative, make it positive
                 if(prevToken?.firstOrNull() == '-'){
                     val temp = prevToken.drop(1)
                     tokens.removeAt(tokens.lastIndex)
                     tokens.add(temp)
                 }
-                else{
+                else{   //otherwise add a - sign
                     val temp = "-".plus(prevToken)
                     tokens.removeAt(tokens.lastIndex)
                     tokens.add(temp)
