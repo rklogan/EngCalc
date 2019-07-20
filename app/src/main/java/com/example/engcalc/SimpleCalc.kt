@@ -14,9 +14,11 @@ import android.widget.Toast
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
+import java.lang.Exception
 
 val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
-val OPERATORS = arrayOf('^','*','/','%','+','-')
+val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
+val PARENTHESESE = arrayOf('(',')')
 
 /**
  * A simple [Fragment] subclass.
@@ -68,6 +70,9 @@ class SimpleCalc : Fragment() {
         add_button.setOnClickListener{operatorButtonPress("+")}
         val subtract_button: Button = view.findViewById(R.id.subtract_button)
         subtract_button.setOnClickListener{operatorButtonPress("-")}
+        val percent_button: Button = view.findViewById(R.id.percent_button)
+        percent_button.setOnClickListener{operatorButtonPress("\\")}
+
 
         //setup clear button
         val clear_button: Button = view.findViewById(R.id.clear_button)
@@ -77,27 +82,81 @@ class SimpleCalc : Fragment() {
             drawOutput()
         }
 
+        //setup parenthesis button
         val parenthesis_button: Button = view.findViewById(R.id.parenthesis_button)
         parenthesis_button.setOnClickListener{
             val prevToken = tokens.lastOrNull()
-            var c = ""
-            if(prevToken == null || prevToken.last() !in NUMERALS){
+            if(prevToken == null ||
+                    (prevToken.last() !in NUMERALS) && prevToken.last() !in PARENTHESESE){
+                //The first character of the input and any parenthesis following an operator or function
+                //must be (
                 tokens.add("(")
                 parenthesisCount++
             }
             else if(parenthesisCount==0
                     || prevToken.last() == '('){
+                //If no opening parenthesis already exist, or the previous token was a parenthesis
+                // we need to insert '* (' to clean up for the interpereter
                 tokens.add("*")
                 tokens.add("(")
                 parenthesisCount++
 
             }
             else{
+                //in any other case just try to close parenthesese
                 assert(--parenthesisCount >= 0)
                 tokens.add(")")
             }
             drawInput()
             drawOutput()
+        }
+
+        //setup plus/minus button
+        val sign_button: Button = view.findViewById(R.id.sign_button)
+        sign_button.setOnClickListener{
+
+            val prevToken = tokens.lastOrNull()
+            val prevChar = prevToken?.lastOrNull()
+
+            //+/- is only applied to numbers
+            if(prevChar in NUMERALS || prevChar == '.'){
+                //if it's already negative, make it positive
+                if(prevToken?.firstOrNull() == '-'){
+                    val temp = prevToken.drop(1)
+                    tokens.removeAt(tokens.lastIndex)
+                    tokens.add(temp)
+                }
+                else{   //otherwise add a - sign
+                    val temp = "-".plus(prevToken)
+                    tokens.removeAt(tokens.lastIndex)
+                    tokens.add(temp)
+                }
+            }
+
+            drawInput()
+            drawOutput()
+        }
+
+        //setup decimal button
+        val decimal_button: Button = view.findViewById(R.id.decimal_button)
+        decimal_button.setOnClickListener{
+            try{
+                val prevToken = tokens.last()
+                val prevChar = prevToken.last()
+
+                //we add a decimal point if the previous token was a number that didn't have one already
+                if(prevChar in NUMERALS && !prevToken.contains('.')){
+                    val temp = prevToken.plus('.')
+                    tokens.removeAt(tokens.lastIndex)
+                    tokens.add(temp)
+                }
+            }catch(NoSuchElementException: Exception){
+            }   //This catch means tokens was empty
+            finally {
+                drawInput()
+                drawOutput()
+            }
+
         }
 
         // Inflate the layout for this fragment
