@@ -16,9 +16,7 @@ import android.util.Log
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
 import java.lang.Exception
 
-val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
-val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
-val PARENTHESESE = arrayOf('(',')')
+
 
 /**
  * A simple [Fragment] subclass.
@@ -205,7 +203,7 @@ class SimpleCalc : Fragment() {
     }
 
     fun drawOutput(){
-
+        answer_area.setText(shuntingYard(tokens).joinToString(separator = " "))
 
     }
 }
