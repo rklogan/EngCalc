@@ -8,7 +8,11 @@ val PARENTHESESE = arrayOf('(',')')
 val PRECEDENCES = mapOf('(' to 3, '\\' to 2,'^' to 2, '*' to 1, '/' to 1, '+' to 0, '-' to 0)
 val FUNCTIONS = arrayOf("nroot","abs","fact","perm","comb","inv","log","sin","cos","tan","asin","acos","atan")
 
-//converts from infix notation to reverse polish
+/**
+ *  converts from infix notation to reverse polish
+ *  @param input A Mutable list of tokens in infix order
+ *  @return A MutableList of tokens in Reverse Polish (postfix) notation
+ */
 fun shuntingYard(input: MutableList<String>): MutableList<String>{
     val output = mutableListOf<String>()
 
@@ -71,6 +75,7 @@ fun shuntingYard(input: MutableList<String>): MutableList<String>{
     if(stack.isNotEmpty()){
         output.addAll(stack.reversed())
     }
+    while("(" in output) output.remove("(")
 
     return output
 }

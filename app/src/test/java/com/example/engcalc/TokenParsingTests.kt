@@ -12,6 +12,19 @@ import java.lang.Exception
 
  */
 
+/**
+ * Helper function to convert a space delimited string of tokens into a MutableList
+ * @param input The string to be converted
+ * @return A MutableList of the tokens
+ */
+fun tokenizeString(input : String) : MutableList<String>{
+    var output = mutableListOf<String>()
+    for( token in input.split(" ")){
+        output.add(token)
+    }
+    return output
+}
+
 class TokenParsingTests {
     /**
      * Helper function to convert a space delimited string of tokens into a MutableList

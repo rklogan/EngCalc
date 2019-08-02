@@ -14,15 +14,17 @@
               android:layout_gravity="fill"
               android:text="TYPING AREA"
               android:textAlignment="center"
-              android:layout_rowWeight="30"/>
+              android:layout_rowWeight="30"
+              android:textSize="36sp" android:gravity="center" android:autoText="false"/>
 
     <TextView android:id="@+id/answer_area"
               android:layout_columnSpan="4"
-              android:layout_gravity="fill"
               android:text="Answer Area"
-              android:textAlignment="center"
+              android:textAlignment="gravity"
               android:layout_rowWeight="20"
-              android:background="@drawable/filler"/>
+              android:background="@drawable/filler"
+              android:textSize="36sp" android:layout_gravity="fill"
+              android:gravity="center"/>
 
     <Button android:id="@+id/clear_button"
             android:layout_gravity="fill"
