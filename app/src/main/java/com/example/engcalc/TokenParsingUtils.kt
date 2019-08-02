@@ -15,14 +15,8 @@ fun shuntingYard(input: MutableList<String>): MutableList<String>{
     //stack to hold operators that have been shunted
     val stack = mutableListOf<String>()
 
-    var s = ""
-    for(token in input){
-        s = s + token + " "
-    }
-    Log.d("INPUT", s)
 
     for(token in input){
-        Log.d("T", token)
         if(token.lastOrNull() in NUMERALS) output.add(token)//numerals can go straight to the output queue
         else if(token in FUNCTIONS) output.add(token)//functions always go on the stack
         else if(token.lastOrNull() in OPERATORS){
@@ -38,7 +32,6 @@ fun shuntingYard(input: MutableList<String>): MutableList<String>{
                         if(stackPrecedence == null) stackPrecedence = 4 //a function was found; prevents NPE
                         val sp : Int = stackPrecedence  //compiler doesn't want nullable values in comparison
 
-                        Log.d("sp", sp.toString())
                         //repeatedly move items from the stack to the output queue
                         while((     onTop in FUNCTIONS
                                     || myPrecedence < sp
@@ -57,7 +50,6 @@ fun shuntingYard(input: MutableList<String>): MutableList<String>{
                         }
                     }
             }catch(NoSuchElementException: Exception){  //something failed. Probably means bug
-                Log.d("Exception",NoSuchElementException.toString())
                 return mutableListOf()
             }
 
@@ -79,16 +71,6 @@ fun shuntingYard(input: MutableList<String>): MutableList<String>{
     if(stack.isNotEmpty()){
         output.addAll(stack.reversed())
     }
-    /*while(stack.lastIndex > 0){
-        output.add(stack.removeAt(stack.lastIndex))
-    }*/
-
-    s = ""
-    for(token in output){
-        s = s + token + " "
-    }
-    Log.d("OUTPUT", s)
-    Log.d("EMPTY OUTPUT",output.isEmpty().toString())
 
     return output
 }
