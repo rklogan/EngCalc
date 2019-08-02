@@ -16,9 +16,7 @@ import android.util.Log
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
 import java.lang.Exception
 
-val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
-val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
-val PARENTHESESE = arrayOf('(',')')
+
 
 /**
  * A simple [Fragment] subclass.
@@ -86,15 +84,15 @@ class SimpleCalc : Fragment() {
         val parenthesis_button: Button = view.findViewById(R.id.parenthesis_button)
         parenthesis_button.setOnClickListener{
             val prevToken = tokens.lastOrNull()
-            if(prevToken == null ||
-                    (prevToken.last() !in NUMERALS) && prevToken.last() !in PARENTHESESE){
+            if(prevToken == null ||                 //First Character
+                    (prevToken.last() !in NUMERALS && prevToken.last() !in PARENTHESESE)
+                    || prevToken.last() == '('){
                 //The first character of the input and any parenthesis following an operator or function
                 //must be (
                 tokens.add("(")
                 parenthesisCount++
             }
-            else if(parenthesisCount==0
-                    || prevToken.last() == '('){
+            else if(parenthesisCount==0 || prevToken == ")"){
                 //If no opening parenthesis already exist, or the previous token was a parenthesis
                 // we need to insert '* (' to clean up for the interpereter
                 tokens.add("*")
@@ -201,11 +199,19 @@ class SimpleCalc : Fragment() {
     }
 
     fun drawInput(){
-        equation_area.setText(tokens.joinToString(separator = " "))
+        if(tokens.isNotEmpty()) equation_area.setText(tokens.joinToString(separator = " "))
+        else equation_area.setText("0")
     }
 
     fun drawOutput(){
-
-
+        //answer_area.setText(shuntingYard(tokens).joinToString(separator = " "))
+        val rpn = shuntingYard(tokens)
+        if (rpn.isNotEmpty()){
+            val output = computeFromRPN(rpn)
+            Log.d("output", output.toString())
+            if(output == "/0") answer_area.setText("")
+            else if(output != null) answer_area.setText(output)
+        }
+        if(tokens.isEmpty()) answer_area.setText("0")
     }
 }
