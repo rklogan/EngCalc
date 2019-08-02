@@ -1,5 +1,7 @@
 package com.example.engcalc
 
+import android.util.Log
+
 val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
 val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
 val PARENTHESESE = arrayOf('(',')')
@@ -13,39 +15,49 @@ fun shuntingYard(input: MutableList<String>): MutableList<String>{
     //stack to hold operators that have been shunted
     val stack = mutableListOf<String>()
 
+    var s = ""
     for(token in input){
+        s = s + token + " "
+    }
+    Log.d("INPUT", s)
+
+    for(token in input){
+        Log.d("T", token)
         if(token.lastOrNull() in NUMERALS) output.add(token)//numerals can go straight to the output queue
         else if(token in FUNCTIONS) output.add(token)//functions always go on the stack
         else if(token.lastOrNull() in OPERATORS){
-
             try{
                 //get info about the current operator
                 var myPrecedence = PRECEDENCES.get(token.last())
                 if(myPrecedence == null) myPrecedence = -1 //unreachable; exists to satisfy compiler
 
                 //peek at the top of the stack
-                var onTop = stack.last()
-                var stackPrecedence = PRECEDENCES.get(onTop.last())
-                if(stackPrecedence == null) stackPrecedence = 4 //a function was found; prevents NPE
-                val sp : Int = stackPrecedence  //compiler doesn't want nullable values in comparison
+                var onTop = stack.lastOrNull()
+                    if(onTop != null){
+                        var stackPrecedence = PRECEDENCES.get(onTop?.last())
+                        if(stackPrecedence == null) stackPrecedence = 4 //a function was found; prevents NPE
+                        val sp : Int = stackPrecedence  //compiler doesn't want nullable values in comparison
 
-                //repeatedly move items from the stack to the output queue
-                while((     onTop in FUNCTIONS
-                            || myPrecedence < sp
-                            || (stackPrecedence == myPrecedence && onTop != "^"))
-                            && onTop != "("){
+                        Log.d("sp", sp.toString())
+                        //repeatedly move items from the stack to the output queue
+                        while((     onTop in FUNCTIONS
+                                    || myPrecedence < sp
+                                    || (sp == myPrecedence && onTop != "^"))
+                                    && onTop != "("){
 
-                    output.add(stack.removeAt(stack.lastIndex))
+                            output.add(stack.removeAt(stack.lastIndex))
 
-                    //peek at the top of the stack
-                    if(stack.lastIndex > 0){
-                        onTop = stack.last()
-                        stackPrecedence = PRECEDENCES.get(onTop.last())
-                        if(stackPrecedence==null) stackPrecedence = 4   //a function was found; avoid NPE
+                            //peek at the top of the stack
+                            if(stack.lastIndex > 0){
+                                onTop = stack.lastOrNull()
+                                stackPrecedence = PRECEDENCES.get(onTop?.lastOrNull())
+                                if(stackPrecedence==null) stackPrecedence = 4   //a function was found; avoid NPE
+                            }
+                            else break //no more elements to pop
+                        }
                     }
-                    else break //no more elements to pop
-                }
             }catch(NoSuchElementException: Exception){  //something failed. Probably means bug
+                Log.d("Exception",NoSuchElementException.toString())
                 return mutableListOf()
             }
 
@@ -64,9 +76,19 @@ fun shuntingYard(input: MutableList<String>): MutableList<String>{
         }
     }
     //once all inputs have been processed, we need to empty the stack
-    while(stack.lastIndex > 0){
-        output.add(stack.removeAt(stack.lastIndex))
+    if(stack.isNotEmpty()){
+        output.addAll(stack.reversed())
     }
+    /*while(stack.lastIndex > 0){
+        output.add(stack.removeAt(stack.lastIndex))
+    }*/
+
+    s = ""
+    for(token in output){
+        s = s + token + " "
+    }
+    Log.d("OUTPUT", s)
+    Log.d("EMPTY OUTPUT",output.isEmpty().toString())
 
     return output
 }
