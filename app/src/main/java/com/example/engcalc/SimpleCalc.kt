@@ -149,12 +149,21 @@ class SimpleCalc : Fragment() {
                     tokens.add(temp)
                 }
             }catch(NoSuchElementException: Exception){
+                tokens.add("0.")
+
             }   //This catch means tokens was empty
             finally {
                 drawInput()
                 drawOutput()
             }
 
+        }
+
+        //This is a really stupid button.
+        val equals_button: Button = view.findViewById(R.id.equals_button)
+        equals_button.setOnClickListener{
+            drawInput()
+            drawOutput()
         }
 
         // Inflate the layout for this fragment
@@ -186,7 +195,7 @@ class SimpleCalc : Fragment() {
     fun operatorButtonPress(token:String){
         val prevToken = tokens.lastOrNull()
         //An expression can't start with an operator
-        if(prevToken == null) return
+        if(prevToken == null || prevToken == "(") return
 
         //check that we don't have two operators in a row
         val prevChar = prevToken.lastOrNull()
