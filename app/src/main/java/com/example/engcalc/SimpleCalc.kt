@@ -28,8 +28,7 @@ import java.lang.Exception
  *
  */
 class SimpleCalc : Fragment() {
-    val tokens = mutableListOf<String>()
-    var parenthesisCount = 0
+    var expr = Expression()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -68,14 +67,22 @@ class SimpleCalc : Fragment() {
         add_button.setOnClickListener{operatorButtonPress("+")}
         val subtract_button: Button = view.findViewById(R.id.subtract_button)
         subtract_button.setOnClickListener{operatorButtonPress("-")}
+
+
+        //TODO
+        //set up percent button
         val percent_button: Button = view.findViewById(R.id.percent_button)
-        percent_button.setOnClickListener{operatorButtonPress("\\")}
+        percent_button.setOnClickListener{
+            expr.percentButton()
+            drawInput()
+            drawOutput()
+        }
 
 
         //setup clear button
         val clear_button: Button = view.findViewById(R.id.clear_button)
         clear_button.setOnClickListener{
-            tokens.clear()
+            expr.clearTokens()
             drawInput()
             drawOutput()
         }
@@ -83,28 +90,7 @@ class SimpleCalc : Fragment() {
         //setup parenthesis button
         val parenthesis_button: Button = view.findViewById(R.id.parenthesis_button)
         parenthesis_button.setOnClickListener{
-            val prevToken = tokens.lastOrNull()
-            if(prevToken == null ||                 //First Character
-                    (prevToken.last() !in NUMERALS && prevToken.last() !in PARENTHESESE)
-                    || prevToken.last() == '('){
-                //The first character of the input and any parenthesis following an operator or function
-                //must be (
-                tokens.add("(")
-                parenthesisCount++
-            }
-            else if(parenthesisCount==0 || prevToken == ")"){
-                //If no opening parenthesis already exist, or the previous token was a parenthesis
-                // we need to insert '* (' to clean up for the interpereter
-                tokens.add("*")
-                tokens.add("(")
-                parenthesisCount++
-
-            }
-            else{
-                //in any other case just try to close parenthesese
-                assert(--parenthesisCount >= 0)
-                tokens.add(")")
-            }
+            expr.parenthesisButton()
             drawInput()
             drawOutput()
         }
@@ -112,25 +98,7 @@ class SimpleCalc : Fragment() {
         //setup plus/minus button
         val sign_button: Button = view.findViewById(R.id.sign_button)
         sign_button.setOnClickListener{
-
-            val prevToken = tokens.lastOrNull()
-            val prevChar = prevToken?.lastOrNull()
-
-            //+/- is only applied to numbers
-            if(prevChar in NUMERALS || prevChar == '.'){
-                //if it's already negative, make it positive
-                if(prevToken?.firstOrNull() == '-'){
-                    val temp = prevToken.drop(1)
-                    tokens.removeAt(tokens.lastIndex)
-                    tokens.add(temp)
-                }
-                else{   //otherwise add a - sign
-                    val temp = "-".plus(prevToken)
-                    tokens.removeAt(tokens.lastIndex)
-                    tokens.add(temp)
-                }
-            }
-
+            expr.signButton()
             drawInput()
             drawOutput()
         }
@@ -138,25 +106,9 @@ class SimpleCalc : Fragment() {
         //setup decimal button
         val decimal_button: Button = view.findViewById(R.id.decimal_button)
         decimal_button.setOnClickListener{
-            try{
-                val prevToken = tokens.last()
-                val prevChar = prevToken.last()
-
-                //we add a decimal point if the previous token was a number that didn't have one already
-                if(prevChar in NUMERALS && !prevToken.contains('.')){
-                    val temp = prevToken.plus('.')
-                    tokens.removeAt(tokens.lastIndex)
-                    tokens.add(temp)
-                }
-            }catch(NoSuchElementException: Exception){
-                tokens.add("0.")
-
-            }   //This catch means tokens was empty
-            finally {
-                drawInput()
-                drawOutput()
-            }
-
+            expr.decimalButton()
+            drawInput()
+            drawOutput()
         }
 
         //This is a really stupid button.
@@ -175,15 +127,7 @@ class SimpleCalc : Fragment() {
      * @param token A String representation of the digit
      */
     fun numericalButtonPress(token:String){
-        val prevToken = tokens.lastOrNull()
-        val prevChar = prevToken?.lastOrNull()
-        if(prevChar in NUMERALS || prevChar == '.'){
-            val temp = prevToken.plus(token)
-            tokens.removeAt(tokens.lastIndex)
-            tokens.add(temp)
-        }
-        else tokens.add(token)
-
+        expr.numericalButtonPress((token))
         drawInput()
         drawOutput()
     }
@@ -193,34 +137,28 @@ class SimpleCalc : Fragment() {
      * @param token A String representation of the operator
      */
     fun operatorButtonPress(token:String){
-        val prevToken = tokens.lastOrNull()
-        //An expression can't start with an operator
-        if(prevToken == null || prevToken == "(") return
-
-        //check that we don't have two operators in a row
-        val prevChar = prevToken.lastOrNull()
-        if(prevChar in OPERATORS) return
-
-        tokens.add(token)
-
+        expr.operatorButtonPress(token)
         drawInput()
         drawOutput()
     }
 
     fun drawInput(){
-        if(tokens.isNotEmpty()) equation_area.setText(tokens.joinToString(separator = " "))
+        val tmp = expr.getTokens()
+        if(tmp.isNotEmpty()){
+            if(expr.isPercentage()) equation_area.setText(tmp[0] + "%")
+            else equation_area.setText(tmp.joinToString(separator = " "))
+        }
         else equation_area.setText("0")
     }
 
     fun drawOutput(){
         //answer_area.setText(shuntingYard(tokens).joinToString(separator = " "))
-        val rpn = shuntingYard(tokens)
+        val rpn = expr.getRPN()
         if (rpn.isNotEmpty()){
-            val output = computeFromRPN(rpn)
-            Log.d("output", output.toString())
+            val output = expr.getEval()
             if(output == "/0") answer_area.setText("")
             else if(output != null) answer_area.setText(output)
         }
-        if(tokens.isEmpty()) answer_area.setText("0")
+        if(expr.getTokens().isEmpty()) answer_area.setText("0")
     }
 }
