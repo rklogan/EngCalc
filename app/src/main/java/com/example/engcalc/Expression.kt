@@ -137,6 +137,7 @@ class Expression {
 
         for (token in input) {
             if (token.lastOrNull() in NUMERALS) output.add(token)//numerals can go straight to the output queue
+            else if (token.lastOrNull() == '.') output.add(token + "0")
             else if (token in FUNCTIONS) output.add(token)//functions always go on the stack
             else if (token.lastOrNull() in OPERATORS) {
                 try {
@@ -419,12 +420,15 @@ class Expression {
                 val temp = prevToken.plus('.')
                 tokens.removeAt(tokens.lastIndex)
                 tokens.add(temp)
+                Log.d("TOKENS",tokens[0])
             }
         }catch(NoSuchElementException: java.lang.Exception){
             tokens.add("0.")
         }   //This catch means tokens was empty
+        Log.d("TOKENS",tokens[0])
 
         rpn = shuntingYard(tokens)
+        Log.d("RPN",rpn[0])
         eval = computeFromRPN(rpn)
     }
 
