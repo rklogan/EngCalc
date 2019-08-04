@@ -1,12 +1,13 @@
 package com.example.engcalc
 
+import android.util.Log
 import java.lang.ArithmeticException
 import java.lang.Math.pow
 
 val NUMERALS = arrayOf('0','1','2','3','4','5','6','7','8','9', 'e', 'p')
-val OPERATORS = arrayOf('\\','^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
+val OPERATORS = arrayOf('^','*','/','%','+','-') // '\' represents percent; '%' represents modulo
 val PARENTHESESE = arrayOf('(',')')
-val PRECEDENCES = mapOf('(' to 3, '\\' to 2,'^' to 2, '*' to 1, '/' to 1, '+' to 0, '-' to 0)
+val PRECEDENCES = mapOf('(' to 3,'^' to 2, '*' to 1, '/' to 1, '+' to 0, '-' to 0)
 val FUNCTIONS = arrayOf("nroot","abs","fact","perm","comb","inv","log","sin","cos","tan","asin","acos","atan")
 
 
@@ -91,6 +92,17 @@ class Expression {
         eval = "0"
     }
 
+    /**
+     * checks if the expression is a percentage
+     * @return Returns true if the expression is a percentage expression
+     */
+    fun isPercentage() : Boolean {
+        if(tokens.size == 3){
+            if(tokens [2] == "100%") return true
+        }
+        return false
+    }
+
     /****************************Methods for manipulating the data structure internally******************************/
 
     /**
@@ -100,7 +112,10 @@ class Expression {
         rpn = shuntingYard(tokens)
         eval = computeFromRPN(rpn)
         parenthesisCount = 0
-        for(t in tokens) if(t=="(") parenthesisCount++
+        for(t in tokens){
+            if(t=="(") parenthesisCount++
+            if(t==")") parenthesisCount--
+        }
     }
 
     /**
@@ -108,8 +123,16 @@ class Expression {
      *  @param input A Mutable list of tokens in infix order
      *  @return A MutableList of tokens in Reverse Polish (postfix) notation
      */
-    fun shuntingYard(input: MutableList<String>): MutableList<String> {
+    private fun shuntingYard(input: MutableList<String>): MutableList<String> {
+
         val output = mutableListOf<String>()
+
+        if(isPercentage()){
+            output.add(tokens[0])
+            output.add("100")
+            output.add(tokens[1])
+            return output
+        }
 
         //stack to hold operators that have been shunted
         val stack = mutableListOf<String>()
@@ -117,6 +140,7 @@ class Expression {
 
         for (token in input) {
             if (token.lastOrNull() in NUMERALS) output.add(token)//numerals can go straight to the output queue
+            else if (token.lastOrNull() == '.') output.add(token + "0")
             else if (token in FUNCTIONS) output.add(token)//functions always go on the stack
             else if (token.lastOrNull() in OPERATORS) {
                 try {
@@ -179,7 +203,7 @@ class Expression {
      * @param input The MutableList being used as a stack
      * @return The last element in the MutableList
      */
-    fun popMutableList(input: MutableList<String>): String? {
+    private fun popMutableList(input: MutableList<String>): String? {
         val rv = input.lastOrNull()
         if (!input.isEmpty()) input.removeAt(input.size - 1)
         return rv
@@ -192,7 +216,7 @@ class Expression {
      * @param operator A Char representation of the operator [^,*,/,%,+,-]
      * @return A String containing the result of the operation
      */
-    fun doBasicArithmetic(a: String?, b: String?, operator: Char): String {
+    private fun doBasicArithmetic(a: String?, b: String?, operator: Char): String {
         //get the int and double value for each input
         var x_int = a?.toIntOrNull()
         var x_dbl = a!!.toDouble()
@@ -246,12 +270,15 @@ class Expression {
      * @param input A MutableList of Strings that represent the equation in reverse polish (postfix) notation
      * @return A String containing the results of the calculation or null if the equation was malformed
      */
-    fun computeFromRPN(input: MutableList<String>): String? {
+    private fun computeFromRPN(input: MutableList<String>): String? {
+        if(input.isEmpty()) return eval
+
         //stack for numbers that have not been operated on yet
         var lhs = mutableListOf<String>()
 
         for (token in input) {
-            if (token.lastOrNull() in NUMERALS) lhs.add(token)   //numbers always get added to the stack
+            val c = token.lastOrNull()
+            if (c in NUMERALS) lhs.add(token)   //numbers always get added to the stack
             else if (token.lastOrNull() in OPERATORS) {
                 val b = popMutableList(lhs)
                 val a = popMutableList(lhs)
@@ -272,6 +299,19 @@ class Expression {
         return lhs[0]
     }
 
+    /**
+     * Removes percentages from the expression
+     */
+    private fun removePercentage(){
+        if(isPercentage()){
+            tokens[2] = tokens[2].dropLast(1)
+            update()
+            tokens.clear()
+            tokens.add(eval.toString())
+            update()
+        }
+    }
+
     /***************************Logic For External Button Presses****************************************************/
 
     /**
@@ -281,12 +321,13 @@ class Expression {
     fun numericalButtonPress(token: String) {
         val prevToken = tokens.lastOrNull()
         val prevChar = prevToken?.lastOrNull()
-        if (prevChar in NUMERALS || prevChar == '.') {
-            val temp = prevToken.plus(token)
-            tokens.removeAt(tokens.lastIndex)
-            tokens.add(temp)
-        } else tokens.add(token)
-
+        if(!isPercentage()) {   //we can't append to percentages
+            if (prevChar in NUMERALS || prevChar == '.') {
+                val temp = prevToken.plus(token)
+                tokens.removeAt(tokens.lastIndex)
+                tokens.add(temp)
+            } else tokens.add(token)
+        }
         update()
 
     }
@@ -296,6 +337,8 @@ class Expression {
      * @param token A String representation of the operator
      */
     fun operatorButtonPress(token:String) {
+        removePercentage()
+
         val prevToken = tokens.lastOrNull()
         //An expression can't start with an operator
         if (prevToken == null || prevToken == "(") return
@@ -312,6 +355,8 @@ class Expression {
      * Logic for the onClickListener of the () Button
      */
     fun parenthesisButton(){
+        removePercentage()
+
         val prevToken = tokens.lastOrNull()
         if(prevToken == null ||                 //First Character
             (prevToken.last() !in NUMERALS && prevToken.last() !in PARENTHESESE)
@@ -342,6 +387,8 @@ class Expression {
      * Logic for the onClickListener of the +/- button
      */
     fun signButton(){
+        removePercentage()
+
         val prevToken = tokens.lastOrNull()
         val prevChar = prevToken?.lastOrNull()
 
@@ -367,6 +414,8 @@ class Expression {
      * Logic for the onClickListener of the . Button
      */
     fun decimalButton(){
+        removePercentage()
+
         try{
             val prevToken = tokens.last()
             val prevChar = prevToken.last()
@@ -383,5 +432,17 @@ class Expression {
 
         rpn = shuntingYard(tokens)
         eval = computeFromRPN(rpn)
+    }
+
+    /**
+     * Logic for the onClickListener of the PercentButton
+     */
+    fun percentButton(){
+        if(eval != null) {
+            tokens = mutableListOf(eval.toString(), "/", "100%")
+            rpn = shuntingYard(tokens)
+            eval = computeFromRPN(rpn)
+            parenthesisCount = 0
+        }
     }
 }

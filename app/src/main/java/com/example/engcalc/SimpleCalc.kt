@@ -2,6 +2,7 @@ package com.example.engcalc
 
 import android.app.ActivityManager
 import android.content.Context
+import android.media.Image
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -13,6 +14,7 @@ import android.widget.Button
 import android.widget.Toast
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.ImageButton
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
 import java.lang.Exception
 
@@ -28,8 +30,7 @@ import java.lang.Exception
  *
  */
 class SimpleCalc : Fragment() {
-    val tokens = mutableListOf<String>()
-    var parenthesisCount = 0
+    var expr = Expression()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,129 +39,82 @@ class SimpleCalc : Fragment() {
         val view: View = inflater.inflate(R.layout.fragment_simple_calc, container, false)
 
         //setup click listeners for numerical buttons
-        val zero_button: Button = view.findViewById(R.id.zero_button)
+        val zero_button: ImageButton = view.findViewById(R.id.zero_button)
         zero_button.setOnClickListener{numericalButtonPress("0")}
-        val one_button: Button = view.findViewById(R.id.one_button)
+        val one_button: ImageButton = view.findViewById(R.id.one_button)
         one_button.setOnClickListener{numericalButtonPress("1")}
-        val two_button: Button= view.findViewById(R.id.two_button)
+        val two_button: ImageButton= view.findViewById(R.id.two_button)
         two_button.setOnClickListener{ numericalButtonPress("2")}
-        val three_button: Button = view.findViewById(R.id.three_button)
+        val three_button: ImageButton = view.findViewById(R.id.three_button)
         three_button.setOnClickListener{ numericalButtonPress("3")}
-        val four_button: Button = view.findViewById(R.id.four_button)
+        val four_button: ImageButton = view.findViewById(R.id.four_button)
         four_button.setOnClickListener{numericalButtonPress("4")}
-        val five_button: Button = view.findViewById(R.id.five_button)
+        val five_button: ImageButton = view.findViewById(R.id.five_button)
         five_button.setOnClickListener{numericalButtonPress("5")}
-        val six_button: Button = view.findViewById(R.id.six_button)
+        val six_button: ImageButton = view.findViewById(R.id.six_button)
         six_button.setOnClickListener{numericalButtonPress("6")}
-        val seven_button: Button = view.findViewById(R.id.seven_button)
+        val seven_button: ImageButton = view.findViewById(R.id.seven_button)
         seven_button.setOnClickListener{numericalButtonPress("7")}
-        val eight_button: Button = view.findViewById(R.id.eight_button)
+        val eight_button: ImageButton = view.findViewById(R.id.eight_button)
         eight_button.setOnClickListener{numericalButtonPress("8")}
-        val nine_button: Button = view.findViewById(R.id.nine_button)
+        val nine_button: ImageButton = view.findViewById(R.id.nine_button)
         nine_button.setOnClickListener{numericalButtonPress("9")}
 
         //set up listerners for operator buttons
-        val multiply_button: Button = view.findViewById(R.id.multiply_button)
+        val multiply_button: ImageButton = view.findViewById(R.id.multiply_button)
         multiply_button.setOnClickListener{operatorButtonPress("*")}
-        val divide_button: Button = view.findViewById(R.id.divide_button)
+        val divide_button: ImageButton = view.findViewById(R.id.divide_button)
         divide_button.setOnClickListener{operatorButtonPress("/")}
-        val add_button: Button = view.findViewById(R.id.add_button)
+        val add_button: ImageButton = view.findViewById(R.id.add_button)
         add_button.setOnClickListener{operatorButtonPress("+")}
-        val subtract_button: Button = view.findViewById(R.id.subtract_button)
+        val subtract_button: ImageButton = view.findViewById(R.id.subtract_button)
         subtract_button.setOnClickListener{operatorButtonPress("-")}
-        val percent_button: Button = view.findViewById(R.id.percent_button)
-        percent_button.setOnClickListener{operatorButtonPress("\\")}
+
+
+        //TODO
+        //set up percent button
+        val percent_button: ImageButton = view.findViewById(R.id.percent_button)
+        percent_button.setOnClickListener{
+            expr.percentButton()
+            drawInput()
+            drawOutput()
+        }
 
 
         //setup clear button
-        val clear_button: Button = view.findViewById(R.id.clear_button)
+        val clear_button: ImageButton = view.findViewById(R.id.clear_button)
         clear_button.setOnClickListener{
-            tokens.clear()
+            expr.clearTokens()
             drawInput()
             drawOutput()
         }
 
         //setup parenthesis button
-        val parenthesis_button: Button = view.findViewById(R.id.parenthesis_button)
+        val parenthesis_button: ImageButton = view.findViewById(R.id.parenthesis_button)
         parenthesis_button.setOnClickListener{
-            val prevToken = tokens.lastOrNull()
-            if(prevToken == null ||                 //First Character
-                    (prevToken.last() !in NUMERALS && prevToken.last() !in PARENTHESESE)
-                    || prevToken.last() == '('){
-                //The first character of the input and any parenthesis following an operator or function
-                //must be (
-                tokens.add("(")
-                parenthesisCount++
-            }
-            else if(parenthesisCount==0 || prevToken == ")"){
-                //If no opening parenthesis already exist, or the previous token was a parenthesis
-                // we need to insert '* (' to clean up for the interpereter
-                tokens.add("*")
-                tokens.add("(")
-                parenthesisCount++
-
-            }
-            else{
-                //in any other case just try to close parenthesese
-                assert(--parenthesisCount >= 0)
-                tokens.add(")")
-            }
+            expr.parenthesisButton()
             drawInput()
             drawOutput()
         }
 
         //setup plus/minus button
-        val sign_button: Button = view.findViewById(R.id.sign_button)
+        val sign_button: ImageButton = view.findViewById(R.id.sign_button)
         sign_button.setOnClickListener{
-
-            val prevToken = tokens.lastOrNull()
-            val prevChar = prevToken?.lastOrNull()
-
-            //+/- is only applied to numbers
-            if(prevChar in NUMERALS || prevChar == '.'){
-                //if it's already negative, make it positive
-                if(prevToken?.firstOrNull() == '-'){
-                    val temp = prevToken.drop(1)
-                    tokens.removeAt(tokens.lastIndex)
-                    tokens.add(temp)
-                }
-                else{   //otherwise add a - sign
-                    val temp = "-".plus(prevToken)
-                    tokens.removeAt(tokens.lastIndex)
-                    tokens.add(temp)
-                }
-            }
-
+            expr.signButton()
             drawInput()
             drawOutput()
         }
 
         //setup decimal button
-        val decimal_button: Button = view.findViewById(R.id.decimal_button)
+        val decimal_button: ImageButton = view.findViewById(R.id.decimal_button)
         decimal_button.setOnClickListener{
-            try{
-                val prevToken = tokens.last()
-                val prevChar = prevToken.last()
-
-                //we add a decimal point if the previous token was a number that didn't have one already
-                if(prevChar in NUMERALS && !prevToken.contains('.')){
-                    val temp = prevToken.plus('.')
-                    tokens.removeAt(tokens.lastIndex)
-                    tokens.add(temp)
-                }
-            }catch(NoSuchElementException: Exception){
-                tokens.add("0.")
-
-            }   //This catch means tokens was empty
-            finally {
-                drawInput()
-                drawOutput()
-            }
-
+            expr.decimalButton()
+            drawInput()
+            drawOutput()
         }
 
         //This is a really stupid button.
-        val equals_button: Button = view.findViewById(R.id.equals_button)
+        val equals_button: ImageButton = view.findViewById(R.id.equals_button)
         equals_button.setOnClickListener{
             drawInput()
             drawOutput()
@@ -175,15 +129,7 @@ class SimpleCalc : Fragment() {
      * @param token A String representation of the digit
      */
     fun numericalButtonPress(token:String){
-        val prevToken = tokens.lastOrNull()
-        val prevChar = prevToken?.lastOrNull()
-        if(prevChar in NUMERALS || prevChar == '.'){
-            val temp = prevToken.plus(token)
-            tokens.removeAt(tokens.lastIndex)
-            tokens.add(temp)
-        }
-        else tokens.add(token)
-
+        expr.numericalButtonPress((token))
         drawInput()
         drawOutput()
     }
@@ -193,34 +139,28 @@ class SimpleCalc : Fragment() {
      * @param token A String representation of the operator
      */
     fun operatorButtonPress(token:String){
-        val prevToken = tokens.lastOrNull()
-        //An expression can't start with an operator
-        if(prevToken == null || prevToken == "(") return
-
-        //check that we don't have two operators in a row
-        val prevChar = prevToken.lastOrNull()
-        if(prevChar in OPERATORS) return
-
-        tokens.add(token)
-
+        expr.operatorButtonPress(token)
         drawInput()
         drawOutput()
     }
 
     fun drawInput(){
-        if(tokens.isNotEmpty()) equation_area.setText(tokens.joinToString(separator = " "))
+        val tmp = expr.getTokens()
+        if(tmp.isNotEmpty()){
+            if(expr.isPercentage()) equation_area.setText(tmp[0] + "%")
+            else equation_area.setText(tmp.joinToString(separator = " "))
+        }
         else equation_area.setText("0")
     }
 
     fun drawOutput(){
         //answer_area.setText(shuntingYard(tokens).joinToString(separator = " "))
-        val rpn = shuntingYard(tokens)
+        val rpn = expr.getRPN()
         if (rpn.isNotEmpty()){
-            val output = computeFromRPN(rpn)
-            Log.d("output", output.toString())
+            val output = expr.getEval()
             if(output == "/0") answer_area.setText("")
             else if(output != null) answer_area.setText(output)
         }
-        if(tokens.isEmpty()) answer_area.setText("0")
+        if(expr.getTokens().isEmpty()) answer_area.setText("0")
     }
 }
