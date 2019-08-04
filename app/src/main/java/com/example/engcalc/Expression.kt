@@ -112,7 +112,10 @@ class Expression {
         rpn = shuntingYard(tokens)
         eval = computeFromRPN(rpn)
         parenthesisCount = 0
-        for(t in tokens) if(t=="(") parenthesisCount++
+        for(t in tokens){
+            if(t=="(") parenthesisCount++
+            if(t==")") parenthesisCount--
+        }
     }
 
     /**
@@ -268,6 +271,8 @@ class Expression {
      * @return A String containing the results of the calculation or null if the equation was malformed
      */
     private fun computeFromRPN(input: MutableList<String>): String? {
+        if(input.isEmpty()) return eval
+
         //stack for numbers that have not been operated on yet
         var lhs = mutableListOf<String>()
 
@@ -420,15 +425,12 @@ class Expression {
                 val temp = prevToken.plus('.')
                 tokens.removeAt(tokens.lastIndex)
                 tokens.add(temp)
-                Log.d("TOKENS",tokens[0])
             }
         }catch(NoSuchElementException: java.lang.Exception){
             tokens.add("0.")
         }   //This catch means tokens was empty
-        Log.d("TOKENS",tokens[0])
 
         rpn = shuntingYard(tokens)
-        Log.d("RPN",rpn[0])
         eval = computeFromRPN(rpn)
     }
 
