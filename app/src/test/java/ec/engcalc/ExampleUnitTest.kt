@@ -1,4 +1,4 @@
-package com.example.engcalc
+package ec.engcalc
 
 import org.junit.Test
 

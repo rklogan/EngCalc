@@ -1,10 +1,7 @@
-package com.example.engcalc
+package ec.engcalc
 
 
-import android.util.Log
 import org.junit.Test
-import org.junit.Assert.*
-import java.lang.Exception
 
 /**
  * "nroot","abs","fact","perm","comb","inv","log","sin","cos","tan",

@@ -1,6 +1,5 @@
-package com.example.engcalc
+package ec.engcalc
 
-import android.util.Log
 import java.lang.ArithmeticException
 import java.lang.Math.pow
 
@@ -151,7 +150,7 @@ class Expression {
                     //peek at the top of the stack
                     var onTop = stack.lastOrNull()
                     if (onTop != null) {
-                        var stackPrecedence = PRECEDENCES.get(onTop?.last())
+                        var stackPrecedence = PRECEDENCES.get(onTop.last())
                         if (stackPrecedence == null) stackPrecedence = 4 //a function was found; prevents NPE
                         val sp: Int = stackPrecedence  //compiler doesn't want nullable values in comparison
 
