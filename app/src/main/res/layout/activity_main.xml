@@ -12,7 +12,7 @@
 
 
     <fragment android:id="@+id/fragment_simple_calc"
-              android:name="com.example.engcalc.SimpleCalc"
+              android:name="ec.engcalc.SimpleCalc"
               android:layout_width="match_parent"
               android:layout_height="match_parent" />
 

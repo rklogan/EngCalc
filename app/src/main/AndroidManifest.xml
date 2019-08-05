@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.engcalc">
+          package="ec.engcalc"
+          android:versionCode="1"
+          android:versionName="EngCalc 0.5">
 
     <application
             android:allowBackup="true"

@@ -1,23 +1,12 @@
-package com.example.engcalc
+package ec.engcalc
 
-import android.app.ActivityManager
-import android.content.Context
-import android.media.Image
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import java.lang.StringBuilder
-import android.widget.Button
-import android.widget.Toast
-import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.widget.ImageButton
 import kotlinx.android.synthetic.main.fragment_simple_calc.*
-import java.lang.Exception
-
 
 
 /**
