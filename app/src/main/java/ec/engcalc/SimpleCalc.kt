@@ -2,6 +2,7 @@ package ec.engcalc
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,49 +19,27 @@ import kotlinx.android.synthetic.main.fragment_simple_calc.*
  * create an instance of this fragment.
  *
  */
-class SimpleCalc : Fragment() {
+open class SimpleCalc : Fragment() {
     var expr = Expression()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view: View = inflater.inflate(R.layout.fragment_simple_calc, container, false)
+        var layout = R.layout.fragment_simple_calc
+        if(savedInstanceState != null){
+            layout = when(savedInstanceState.getInt("Mode", -1)){
+                0 -> R.layout.fragment_simple_calc
+                1 -> R.layout.fragment_scientific_calc
+                else -> R.layout.fragment_simple_calc
+            }
+        }
+        val view: View = inflater.inflate(layout, container, false)
 
-        //setup click listeners for numerical buttons
-        val zero_button: ImageButton = view.findViewById(R.id.zero_button)
-        zero_button.setOnClickListener{numericalButtonPress("0")}
-        val one_button: ImageButton = view.findViewById(R.id.one_button)
-        one_button.setOnClickListener{numericalButtonPress("1")}
-        val two_button: ImageButton= view.findViewById(R.id.two_button)
-        two_button.setOnClickListener{ numericalButtonPress("2")}
-        val three_button: ImageButton = view.findViewById(R.id.three_button)
-        three_button.setOnClickListener{ numericalButtonPress("3")}
-        val four_button: ImageButton = view.findViewById(R.id.four_button)
-        four_button.setOnClickListener{numericalButtonPress("4")}
-        val five_button: ImageButton = view.findViewById(R.id.five_button)
-        five_button.setOnClickListener{numericalButtonPress("5")}
-        val six_button: ImageButton = view.findViewById(R.id.six_button)
-        six_button.setOnClickListener{numericalButtonPress("6")}
-        val seven_button: ImageButton = view.findViewById(R.id.seven_button)
-        seven_button.setOnClickListener{numericalButtonPress("7")}
-        val eight_button: ImageButton = view.findViewById(R.id.eight_button)
-        eight_button.setOnClickListener{numericalButtonPress("8")}
-        val nine_button: ImageButton = view.findViewById(R.id.nine_button)
-        nine_button.setOnClickListener{numericalButtonPress("9")}
+        setupNumericalButtons(view)
+        setupOperatorButtons(view)
+        setupCommonButtons(view)
 
-        //set up listerners for operator buttons
-        val multiply_button: ImageButton = view.findViewById(R.id.multiply_button)
-        multiply_button.setOnClickListener{operatorButtonPress("*")}
-        val divide_button: ImageButton = view.findViewById(R.id.divide_button)
-        divide_button.setOnClickListener{operatorButtonPress("/")}
-        val add_button: ImageButton = view.findViewById(R.id.add_button)
-        add_button.setOnClickListener{operatorButtonPress("+")}
-        val subtract_button: ImageButton = view.findViewById(R.id.subtract_button)
-        subtract_button.setOnClickListener{operatorButtonPress("-")}
-
-
-        //TODO
         //set up percent button
         val percent_button: ImageButton = view.findViewById(R.id.percent_button)
         percent_button.setOnClickListener{
@@ -69,19 +48,22 @@ class SimpleCalc : Fragment() {
             drawOutput()
         }
 
-
-        //setup clear button
-        val clear_button: ImageButton = view.findViewById(R.id.clear_button)
-        clear_button.setOnClickListener{
-            expr.clearTokens()
-            drawInput()
-            drawOutput()
-        }
-
         //setup parenthesis button
         val parenthesis_button: ImageButton = view.findViewById(R.id.parenthesis_button)
         parenthesis_button.setOnClickListener{
             expr.parenthesisButton()
+            drawInput()
+            drawOutput()
+        }
+
+        // Inflate the layout for this fragment
+        return view
+    }
+
+    fun setupCommonButtons(view: View){
+        val clear_button: ImageButton = view.findViewById(R.id.clear_button)
+        clear_button.setOnClickListener{
+            expr.clearTokens()
             drawInput()
             drawOutput()
         }
@@ -108,10 +90,50 @@ class SimpleCalc : Fragment() {
             drawInput()
             drawOutput()
         }
-
-        // Inflate the layout for this fragment
-        return view
     }
+
+    /**
+     * Helper function to set up the listeners for buttons 1-9
+     * @param view The current view
+     */
+    fun setupNumericalButtons(view : View){
+        val zero_button: ImageButton = view.findViewById(R.id.zero_button)
+        zero_button.setOnClickListener{numericalButtonPress("0")}
+        val one_button: ImageButton = view.findViewById(R.id.one_button)
+        one_button.setOnClickListener{numericalButtonPress("1")}
+        val two_button: ImageButton= view.findViewById(R.id.two_button)
+        two_button.setOnClickListener{ numericalButtonPress("2")}
+        val three_button: ImageButton = view.findViewById(R.id.three_button)
+        three_button.setOnClickListener{ numericalButtonPress("3")}
+        val four_button: ImageButton = view.findViewById(R.id.four_button)
+        four_button.setOnClickListener{numericalButtonPress("4")}
+        val five_button: ImageButton = view.findViewById(R.id.five_button)
+        five_button.setOnClickListener{numericalButtonPress("5")}
+        val six_button: ImageButton = view.findViewById(R.id.six_button)
+        six_button.setOnClickListener{numericalButtonPress("6")}
+        val seven_button: ImageButton = view.findViewById(R.id.seven_button)
+        seven_button.setOnClickListener{numericalButtonPress("7")}
+        val eight_button: ImageButton = view.findViewById(R.id.eight_button)
+        eight_button.setOnClickListener{numericalButtonPress("8")}
+        val nine_button: ImageButton = view.findViewById(R.id.nine_button)
+        nine_button.setOnClickListener{numericalButtonPress("9")}
+    }
+
+    /**
+     * Set up the listeners for the 4 basic operators
+     * @param view The current view
+     */
+    fun setupOperatorButtons(view: View){
+        val multiply_button: ImageButton = view.findViewById(R.id.multiply_button)
+        multiply_button.setOnClickListener{operatorButtonPress("*")}
+        val divide_button: ImageButton = view.findViewById(R.id.divide_button)
+        divide_button.setOnClickListener{operatorButtonPress("/")}
+        val add_button: ImageButton = view.findViewById(R.id.add_button)
+        add_button.setOnClickListener{operatorButtonPress("+")}
+        val subtract_button: ImageButton = view.findViewById(R.id.subtract_button)
+        subtract_button.setOnClickListener{operatorButtonPress("-")}
+    }
+
 
     /**
      * Logic for the onClickListeners for the entry of numerals
