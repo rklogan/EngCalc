@@ -9,10 +9,17 @@ import android.widget.ImageButton
 import android.widget.PopupMenu
 
 class MainActivity : AppCompatActivity() {
+    var mode = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        //load the default calculator
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.calc_container, SimpleCalc())
+            .commit()
 
         //setup the hamburger button
         val hamburger = findViewById<ImageButton>(R.id.hamburger_btn)
@@ -22,8 +29,26 @@ class MainActivity : AppCompatActivity() {
 
             popupMenu.setOnMenuItemClickListener{ item ->
                 when(item.itemId){
-                    R.id.nav_simple -> Log.d("NavMenu","Simple")
-                    R.id.nav_scientific -> Log.d("NavMenu", "Scientific")
+                    R.id.nav_simple -> {
+                        Log.d("NavMenu","Simple")
+                        if(mode != 0) {
+                            supportFragmentManager
+                                .beginTransaction()
+                                .replace(R.id.calc_container, SimpleCalc())
+                                .commit()
+                            mode = 0
+                        }
+                    }
+                    R.id.nav_scientific -> {
+                        Log.d("NavMenu", "Scientific")
+                        if(mode != 1) {
+                            supportFragmentManager
+                                .beginTransaction()
+                                .replace(R.id.calc_container, ScientificCalc())
+                                .commit()
+                            mode = 1
+                        }
+                    }
                     else -> Log.d("NavMenu","Other")
                 }
                 true
