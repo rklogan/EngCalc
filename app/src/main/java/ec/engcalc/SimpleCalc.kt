@@ -26,15 +26,7 @@ open class SimpleCalc : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var layout = R.layout.fragment_simple_calc
-        if(savedInstanceState != null){
-            layout = when(savedInstanceState.getInt("Mode", -1)){
-                0 -> R.layout.fragment_simple_calc
-                1 -> R.layout.fragment_scientific_calc
-                else -> R.layout.fragment_simple_calc
-            }
-        }
-        val view: View = inflater.inflate(layout, container, false)
+        val view: View = inflater.inflate(R.layout.fragment_simple_calc, container, false)
 
         setupNumericalButtons(view)
         setupOperatorButtons(view)

@@ -18,9 +18,10 @@ class ScientificCalc : SimpleCalc() {
         savedInstanceState: Bundle?
     ): View? {
         val view: View = inflater.inflate(R.layout.fragment_scientific_calc, container, false)
-        val b = Bundle()
-        b.putInt("Mode",1)
-        super.onCreateView(inflater, container, savedInstanceState)
+
+        setupNumericalButtons(view)
+        setupOperatorButtons(view)
+        setupCommonButtons(view)
 
         // Inflate the layout for this fragment
         return view
