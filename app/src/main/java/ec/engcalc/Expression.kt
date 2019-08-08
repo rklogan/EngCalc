@@ -1,5 +1,6 @@
 package ec.engcalc
 
+import android.util.Log
 import java.lang.ArithmeticException
 import java.lang.Math.pow
 
@@ -178,11 +179,15 @@ class Expression {
                 stack.add(token)
             } else if (token == "(") stack.add(token)
             else if (token == ")") {
-                do {
+                //move tokens on the stack to output until we find the matching (
+                while (stack.lastOrNull() != "(") {
+                    val idx = stack.lastIndex
+
                     //if the stack is ever empty, we have mismatched parenthesese
-                    if (stack.lastIndex < 0) return mutableListOf()
-                    output.add(stack.removeAt(stack.lastIndex))
-                } while (stack.last() != "(")
+                    if (idx < 0) return mutableListOf()
+
+                    output.add(stack.removeAt(idx))
+                }
 
                 //discard the remaining '('
                 stack.removeAt(stack.lastIndex)
@@ -355,6 +360,8 @@ class Expression {
      */
     fun parenthesisButton(){
         removePercentage()
+
+        Log.d("PBtn",tokens.joinToString(separator = " "))
 
         val prevToken = tokens.lastOrNull()
         if(prevToken == null ||                 //First Character
