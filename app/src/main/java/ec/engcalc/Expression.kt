@@ -361,8 +361,6 @@ class Expression {
     fun parenthesisButton(){
         removePercentage()
 
-        Log.d("PBtn",tokens.joinToString(separator = " "))
-
         val prevToken = tokens.lastOrNull()
         if(prevToken == null ||                 //First Character
             (prevToken.last() !in NUMERALS && prevToken.last() !in PARENTHESESE)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -9,12 +9,19 @@
         android:fitsSystemWindows="true"
         tools:openDrawer="start">
 
-
-
     <fragment android:id="@+id/fragment_simple_calc"
               android:name="ec.engcalc.SimpleCalc"
               android:layout_width="match_parent"
               android:layout_height="match_parent" />
 
+    <ImageButton android:id="@+id/hamburger_btn"
+                 android:layout_width="@dimen/hamburger_size"
+                 android:layout_height="@dimen/hamburger_size"
+                 android:layout_alignParentTop="true"
+                 android:layout_alignParentLeft="true"
+                 android:paddingTop="@dimen/hamburger_padding"
+                 android:src="@drawable/ic_hamburger"
+                 android:background="@null"/>
 
-</android.support.v4.widget.DrawerLayout>
+
+</RelativeLayout>
