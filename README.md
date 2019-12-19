@@ -2,8 +2,7 @@
 
 EngCalc is an Android calculator written in Kotlin.
 
-[Play Store]
-(https://play.google.com/store/apps/details?id=ec.engcalc)
+[Play Store](https://play.google.com/store/apps/details?id=ec.engcalc)
 
 ## License
 
